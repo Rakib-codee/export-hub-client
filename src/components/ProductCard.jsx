@@ -20,7 +20,7 @@ const ProductCard = ({ product }) => {
 			className="card bg-base-100 shadow-sm hover:shadow-lg transition-all card-eq"
 		>
 			<figure className="overflow-hidden">
-				<div className="w-full aspect-[4/3] bg-base-200">
+				<div className="w-full aspect-4/3 bg-base-200">
 					<img src={img || image} alt={name} className="w-full h-full object-cover" loading="lazy" />
 				</div>
 			</figure>
