@@ -17,66 +17,105 @@ const Navbar = () => {
   }, [theme]);
 
   return (
-    <nav className="bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-50 border-b">
+    <nav className="bg-linear-to-r from-blue-500 to-indigo-600 text-white sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="h-16 flex items-center justify-between">
-          <Link to="/" className="brand-heading flex items-center gap-2">
-            <span className="inline-block w-2.5 h-6 bg-primary rounded-sm" />
+          <Link to="/" className="text-2xl font-bold flex items-center gap-2">
+            <span className="inline-block w-2.5 h-6 bg-white rounded-sm" />
             Import Export Hub
           </Link>
 
-          <button className="md:hidden btn btn-ghost btn-sm" onClick={() => setOpen((v) => !v)} aria-label="Toggle menu">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          <button
+            className="md:hidden btn btn-ghost btn-sm text-white"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
 
           <div className="hidden md:flex items-center gap-6">
-            <Link to="/all-products" className="hover:text-primary">All Products</Link>
+            <Link to="/all-products" className="hover:underline">All Products</Link>
             {user && (
               <>
-                <Link to="/my-imports" className="hover:text-primary">My Imports</Link>
-                <Link to="/my-exports" className="hover:text-primary">My Exports</Link>
-                <Link to="/add-product" className="btn btn-sm btn-outline">Add Export</Link>
+                <Link to="/my-imports" className="hover:underline">My Imports</Link>
+                <Link to="/my-exports" className="hover:underline">My Exports</Link>
+                <Link to="/add-product" className="btn btn-sm btn-outline text-white border-white hover:bg-white hover:text-indigo-600">Add Export</Link>
               </>
             )}
             <label className="flex items-center gap-2 cursor-pointer">
               <span className="text-sm">🌞</span>
-              <input type="checkbox" className="toggle toggle-sm" checked={theme === "dark"} onChange={(e) => setTheme(e.target.checked ? "dark" : "light")} />
+              <input
+                type="checkbox"
+                className="toggle toggle-sm"
+                checked={theme === "dark"}
+                onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
+              />
               <span className="text-sm">🌙</span>
             </label>
             {user ? (
               <div className="flex gap-2 items-center">
-                <img src={user.photoURL || "/default-avatar.png"} alt="avatar" className="w-8 h-8 rounded-full"/>
-                <button onClick={handleLogout} className="btn btn-sm btn-error">Logout</button>
+                <img
+                  src={user.photoURL || "/default-avatar.png"}
+                  alt="avatar"
+                  className="w-8 h-8 rounded-full border-2 border-white"
+                />
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-sm btn-error hover:bg-red-600"
+                >
+                  Logout
+                </button>
               </div>
             ) : (
-              <Link to="/login" className="btn btn-sm btn-primary">Login</Link>
+              <Link to="/login" className="btn btn-sm btn-primary bg-white text-indigo-600 hover:bg-gray-200">Login</Link>
             )}
           </div>
         </div>
         {open && (
           <div className="md:hidden pb-4 space-y-3">
-            <Link to="/all-products" className="block">All Products</Link>
+            <Link to="/all-products" className="block hover:underline">All Products</Link>
             {user && (
               <>
-                <Link to="/my-imports" className="block">My Imports</Link>
-                <Link to="/my-exports" className="block">My Exports</Link>
-                <Link to="/add-product" className="btn btn-sm btn-outline w-full">Add Export</Link>
+                <Link to="/my-imports" className="block hover:underline">My Imports</Link>
+                <Link to="/my-exports" className="block hover:underline">My Exports</Link>
+                <Link to="/add-product" className="btn btn-sm btn-outline w-full text-white border-white hover:bg-white hover:text-indigo-600">Add Export</Link>
               </>
             )}
             <div className="flex items-center justify-between">
               <span className="text-sm">Theme</span>
               <label className="flex items-center gap-2 cursor-pointer">
                 <span className="text-sm">🌞</span>
-                <input type="checkbox" className="toggle toggle-sm" checked={theme === "dark"} onChange={(e) => setTheme(e.target.checked ? "dark" : "light")} />
+                <input
+                  type="checkbox"
+                  className="toggle toggle-sm"
+                  checked={theme === "dark"}
+                  onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
+                />
                 <span className="text-sm">🌙</span>
               </label>
             </div>
             {user ? (
-              <button onClick={handleLogout} className="btn btn-sm btn-error w-full">Logout</button>
+              <button
+                onClick={handleLogout}
+                className="btn btn-sm btn-error w-full hover:bg-red-600"
+              >
+                Logout
+              </button>
             ) : (
-              <Link to="/login" className="btn btn-sm btn-primary w-full">Login</Link>
+              <Link to="/login" className="btn btn-sm btn-primary w-full bg-white text-indigo-600 hover:bg-gray-200">Login</Link>
             )}
           </div>
         )}

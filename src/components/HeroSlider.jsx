@@ -9,12 +9,12 @@ const slides = [
 	{
 		title: "Connect Global Buyers & Sellers",
 		subtitle: "Streamline your import/export operations with confidence.",
-		image: "https://images.unsplash.com/photo-1556909190-ef7bbaed3e3f?q=80&w=1600&auto=format&fit=crop"
+		image: "https://i.ibb.co/xt0fsMSB/variety-people-multitasking-3d-cartoon-scene.jpg"
 	},
 	{
 		title: "Move Goods Faster",
 		subtitle: "Track shipments and manage trade documents in one place.",
-		image: "https://images.unsplash.com/photo-1541374186666-959f3d1f0f4b?q=80&w=1600&auto=format&fit=crop"
+		image: "https://i.ibb.co/KpKgVtFX/cargo-ship-loading-commercial-port.jpg"
 	},
 	{
 		title: "Scale to New Markets",
@@ -43,7 +43,7 @@ const HeroSlider = () => {
 								className="absolute inset-0 w-full h-full object-cover"
 								loading="eager"
 							/>
-							<div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/50" />
+							<div className="absolute inset-0 bg-linear-to-b from-black/40 to-black/50" />
 							<div className="relative h-full flex items-center justify-center text-center text-white p-6">
 								<div className="max-w-3xl">
 									<motion.h1

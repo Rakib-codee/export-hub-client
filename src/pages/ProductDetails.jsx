@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { createImport, fetchProductById } from "../services/api.js";
-import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const ProductDetails = () => {
@@ -28,13 +27,14 @@ const ProductDetails = () => {
 				const data = await fetchProductById(id);
 				if (mounted) setProduct(data);
 			} catch (e) {
+				console.error("Error fetching product details:", e);
 				setError("Failed to load product details");
 			} finally {
 				if (mounted) setLoading(false);
 			}
 		})();
 		return () => { mounted = false; };
-	}, [id]);
+	}, [id, product?.name]);
 
 	const handleImport = async (e) => {
 		e.preventDefault();
@@ -81,13 +81,13 @@ const ProductDetails = () => {
 			)}
 			{!loading && product && (
 				<div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-					<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+					<div>
 						<img
 							src={product.img || product.image}
 							alt={product.name}
 							className="w-full h-80 object-cover rounded-lg"
 						/>
-					</motion.div>
+					</div>
 					<div className="md:sticky md:top-20 self-start">
 						<h2 className="text-2xl font-bold">{product.name}</h2>
 						<p className="text-gray-600 mt-2">Origin: {product.originCountry || product.country}</p>
