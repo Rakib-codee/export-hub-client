@@ -1,3 +1,56 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@layer components {
+	.brand-heading { @apply text-xl font-bold tracking-tight; }
+	.heading-xl { @apply text-3xl md:text-4xl font-bold; }
+	.heading-lg { @apply text-2xl md:text-3xl font-bold; }
+	.paragraph { @apply text-gray-600 leading-relaxed; }
+	.card-eq { @apply h-full; }
+	.card-body-eq { @apply flex flex-col; }
+}
+
+/* Minimal modern theme for daisyUI */
+:root,
+[data-theme="minimalBlue"] {
+	--rounded-box: 0.75rem;      /* card radius */
+	--rounded-btn: 0.6rem;       /* button radius */
+	--rounded-badge: 0.4rem;
+	--animation-btn: 0.2s;
+	--animation-input: 0.2s;
+	--btn-text-case: initial;
+	--btn-focus-scale: 0.98;
+	--border-btn: 1px;
+	--tab-radius: 0.6rem;
+}
+
+[data-theme="minimalBlue"] {
+	/* neutral minimalist surface and refined blue accent */
+	--b1: 246 246 247; /* base-100 */
+	--b2: 237 238 240; /* base-200 */
+	--b3: 225 227 231; /* base-300 */
+	--bc: 28 30 33;    /* base-content */
+
+	--p: 37 99 235;    /* primary (blue-600) */
+	--pc: 255 255 255; /* on-primary */
+
+	--s: 20 184 166;   /* accent/secondary teal-500 for subtle highlights */
+	--sc: 255 255 255;
+
+	--a: 99 102 241;   /* alternative accent indigo-500 */
+	--ac: 255 255 255;
+
+	--n: 17 24 39;     /* neutral */
+	--nc: 255 255 255;
+
+	--in: 59 130 246;
+	--su: 16 185 129;
+	--wa: 245 158 11;
+	--er: 239 68 68;
+}
+
+/* Subtle card + section polish */
+.card { @apply border border-base-300/60; }
+.btn-primary { @apply bg-primary text-primary-content hover:opacity-95; }
+.btn-outline { @apply border-base-300 text-base-content hover:bg-base-200; }
+
