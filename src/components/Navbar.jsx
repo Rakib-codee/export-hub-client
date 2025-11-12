@@ -115,7 +115,7 @@ const Navbar = () => {
                 Logout
               </button>
             ) : (
-              <Link to="/login" className="btn btn-sm btn-primary w-full bg-white text-indigo-600 hover:bg-gray-200">Login</Link>
+              <Link to="/login" className="btn btn-sm btn-primary w-full bg-white text-indigo-500 hover:bg-gray-200">Login</Link>
             )}
           </div>
         )}
