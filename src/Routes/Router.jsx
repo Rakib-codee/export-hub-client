@@ -16,21 +16,32 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "/all-products", 
-		element: <AllProducts />,
-	  	 loader: () => fetch("http://localhost:3000/models"),				
-	},
-      { path: "/product/:id", element: <ProductDetails /> },
+
+      { 
+        path: "/all-products",
+        element: <AllProducts />,
+        loader: () => fetch("http://localhost:3000/models").then(res => res.json()),				
+      },
+
+      { 
+        path: "/product/:id",
+        element: <ProductDetails />,
+        loader: ({ params }) => fetch(`http://localhost:3000/models/${params.id}`).then(res => res.json()),
+      },
+
       {
         element: <PrivateRoute />,
         children: [
           { path: "/my-exports", element: <MyExports /> },
           { path: "/my-imports", element: <MyImports /> },
-          { path: "/add-product", element: <AddProduct />, 
-			 loader: () => fetch("http://localhost:3000/models"),
-       },
+          { 
+            path: "/add-product",
+            element: <AddProduct />,
+            loader: () => fetch("http://localhost:3000/models").then(res => res.json()),
+          },
         ],
       },
+
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
     ],

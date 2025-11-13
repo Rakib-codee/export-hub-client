@@ -1,139 +1,116 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLoaderData, useParams } from "react-router-dom";
 import { createImport, fetchProductById } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const ProductDetails = () => {
-	const { id } = useParams();
-	const [product, setProduct] = useState(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
-	const [qty, setQty] = useState(1);
-	const [submitting, setSubmitting] = useState(false);
-	const [toast, setToast] = useState(null);
-	const { user } = useAuth();
+  const loaderData = useLoaderData();
+  const { id } = useParams();
+  const { user } = useAuth();
 
-	const available = useMemo(() => Number(product?.availableQuantity ?? 0), [product]);
-	const disableSubmit = useMemo(() => {
-		const q = Number(qty);
-		return !q || q < 1 || q > available || !user;
-	}, [qty, available, user]);
+  const [product, setProduct] = useState(loaderData || null);
+  const [loading, setLoading] = useState(!loaderData);
+  const [error, setError] = useState("");
+  const [qty, setQty] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
 
-	useEffect(() => {
-		document.title = product?.name ? `Import Export Hub | ${product.name}` : "Import Export Hub | Product";
-		let mounted = true;
-		(async () => {
-			try {
-				const data = await fetchProductById(id);
-				if (mounted) setProduct(data);
-			} catch (e) {
-				console.error("Error fetching product details:", e);
-				setError("Failed to load product details");
-			} finally {
-				if (mounted) setLoading(false);
-			}
-		})();
-		return () => { mounted = false; };
-	}, [id, product?.name]);
+  const available = useMemo(() => Number(product?.availableQuantity ?? 0), [product]);
+  const disableSubmit = useMemo(() => !qty || qty < 1 || qty > available || !user, [qty, available, user]);
 
-	const handleImport = async (e) => {
-		e.preventDefault();
-		if (disableSubmit) return;
-		try {
-			setSubmitting(true);
-			const created = await createImport({
-				userId: user.uid,
-				productId: product._id,
-				quantity: Number(qty)
-			});
-			// Optimistically reduce available qty on UI
-			setProduct((prev) => ({ ...prev, availableQuantity: (prev.availableQuantity || 0) - created.quantity }));
-			setToast({ type: "success", message: "Imported successfully" });
-			(document.getElementById("import_modal_close") || {}).click?.();
-		} catch (e) {
-			setToast({ type: "error", message: e?.response?.data?.message || "Failed to import" });
-		} finally {
-			setSubmitting(false);
-		}
-	};
+  useEffect(() => {
+    document.title = product?.name ? `Import Export Hub | ${product.name}` : "Import Export Hub | Product Details";
+    let mounted = true;
 
-	return (
-		<div className="min-h-screen">
-			<h1 className="text-3xl font-bold mb-6 text-center">Product Details</h1>
-			{loading && (
-				<div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 p-4 animate-pulse">
-					<div className="w-full h-80 bg-base-200 rounded-lg" />
-					<div className="space-y-3">
-						<div className="h-6 bg-base-200 rounded w-2/3" />
-						<div className="h-4 bg-base-200 rounded w-1/3" />
-						<div className="h-4 bg-base-200 rounded w-1/2" />
-						<div className="h-24 bg-base-200 rounded w-full" />
-						<div className="h-10 bg-base-200 rounded w-1/2" />
-					</div>
-				</div>
-			)}
-			{error && <p className="text-center text-red-500">{error}</p>}
-			{toast && (
-				<div className={`alert ${toast.type === "success" ? "alert-success" : "alert-error"} max-w-xl mx-auto mb-4`}>
-					<span>{toast.message}</span>
-					<button className="btn btn-sm btn-ghost ml-auto" onClick={() => setToast(null)}>×</button>
-				</div>
-			)}
-			{!loading && product && (
-				<div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-					<div>
-						<img
-							src={product.img || product.image}
-							alt={product.name}
-							className="w-full h-80 object-cover rounded-lg"
-						/>
-					</div>
-					<div className="md:sticky md:top-20 self-start">
-						<h2 className="text-2xl font-bold">{product.name}</h2>
-						<p className="text-gray-600 mt-2">Origin: {product.originCountry || product.country}</p>
-						<p className="mt-2"><span className="font-semibold">Price:</span> ${product.price}</p>
-						<p className="mt-2"><span className="font-semibold">Available Quantity:</span> {product.availableQuantity ?? "-"}</p>
-						<p className="mt-4 text-sm text-gray-700">{product.description}</p>
-						<div className="mt-6 flex gap-3">
-							<button className="btn btn-primary" onClick={() => document.getElementById("import_modal").showModal()}>
-								Import Now
-							</button>
-							<a href="/all-products" className="btn btn-outline">Back to Products</a>
-						</div>
-					</div>
-				</div>
-			)}
+    if (!product) {
+      (async () => {
+        try {
+          const data = await fetchProductById(id);
+          if (mounted) setProduct(data);
+        } catch (err) {
+          console.error(err);
+          setError("Failed to load product details. Please try again.");
+        } finally {
+          if (mounted) setLoading(false);
+        }
+      })();
+    } else {
+      setLoading(false);
+    }
 
-			{/* Import Modal */}
-			<dialog id="import_modal" className="modal">
-				<div className="modal-box">
-					<h3 className="font-bold text-lg mb-2">Import Product</h3>
-					<p className="text-sm text-gray-600 mb-4">Available: {available}</p>
-					<form onSubmit={handleImport} className="space-y-4">
-						<input
-							type="number"
-							min={1}
-							max={available}
-							className="input input-bordered w-full"
-							value={qty}
-							onChange={(e) => setQty(e.target.value)}
-							required
-						/>
-						<button className="btn btn-primary w-full" disabled={disableSubmit || submitting}>
-							{submitting ? "Importing..." : "Submit"}
-						</button>
-					</form>
-					<div className="modal-action">
-						<form method="dialog">
-							<button id="import_modal_close" className="btn">Close</button>
-						</form>
-					</div>
-				</div>
-			</dialog>
-		</div>
-	);
+    return () => { mounted = false; };
+  }, [id, product]);
+  const handleImport = async (e) => {
+    e.preventDefault();
+    if (disableSubmit) return;
+
+    try {
+      setSubmitting(true);
+      const created = await createImport({ userId: user.uid, productId: product._id, quantity: Number(qty) });
+      setProduct((prev) => ({ ...prev, availableQuantity: (prev.availableQuantity || 0) - created.quantity }));
+      setToast({ type: "success", message: "Product imported successfully!" });
+      document.getElementById("import_modal").close();
+    } catch (err) {
+      console.error(err);
+      setToast({ type: "error", message: "Import failed!" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-base-100">
+      <div className="max-w-6xl mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6 text-center text-primary">Product Details</h1>
+
+        {toast && (
+          <div className={`alert ${toast.type === "success" ? "alert-success" : "alert-error"} shadow-lg mb-4`}>
+            <div className="flex justify-between w-full">
+              <span>{toast.message}</span>
+              <button className="btn btn-sm btn-ghost" onClick={() => setToast(null)}>✕</button>
+            </div>
+          </div>
+        )}
+
+        {loading && <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse"><div className="h-80 bg-base-200 rounded-lg"></div><div className="space-y-4"><div className="h-6 bg-base-200 rounded w-3/4"></div><div className="h-4 bg-base-200 rounded w-1/2"></div><div className="h-4 bg-base-200 rounded w-2/3"></div><div className="h-24 bg-base-200 rounded w-full"></div><div className="h-10 bg-base-200 rounded w-1/3"></div></div></div>}
+
+        {error && <div className="text-center text-red-500 font-medium">{error}</div>}
+
+        {!loading && product && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div><img src={product.img || product.image} alt={product.name} className="w-full h-96 object-cover rounded-2xl shadow-md" /></div>
+
+            <div className="flex flex-col justify-center">
+              <h2 className="text-2xl font-bold text-primary mb-2">{product.name}</h2>
+              <p className="text-gray-600 mb-2"><span className="font-semibold">Origin:</span> {product.originCountry || product.country}</p>
+              <p className="text-gray-700 mb-2"><span className="font-semibold">Price:</span> ${product.price}</p>
+              <p className="text-gray-700 mb-2"><span className="font-semibold">Available Quantity:</span> {product.availableQuantity ?? "-"}</p>
+              <p className="text-gray-600 mt-3">{product.description}</p>
+
+              <div className="mt-6 flex gap-3">
+                <button className="btn btn-primary" onClick={() => document.getElementById("import_modal").showModal()} disabled={!user}>Import Now</button>
+                <a href="/all-products" className="btn btn-outline">Back to Products</a>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <dialog id="import_modal" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg mb-3">Import Product</h3>
+          <p className="text-sm text-gray-600 mb-4">Available: {available}</p>
+          <form onSubmit={handleImport} className="space-y-4">
+            <input type="number" min={1} max={available} className="input input-bordered w-full" value={qty} onChange={(e) => setQty(e.target.value)} required />
+            <button className="btn btn-primary w-full" disabled={disableSubmit || submitting}>{submitting ? "Importing..." : "Confirm Import"}</button>
+          </form>
+          <div className="modal-action">
+            <button className="btn" onClick={() => document.getElementById("import_modal").close()}>Close</button>
+          </div>
+        </div>
+      </dialog>
+    </div>
+  );
 };
 
 export default ProductDetails;
-
-
