@@ -25,7 +25,7 @@ const AllProducts = () => {
   const paginatedItems = filteredItems.slice((page - 1) * limit, page * limit);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 px-4 md:px-8 py-12">
+    <div className="min-h-screen j from-gray-50 to-blue-50 px-4 md:px-8 py-12">
       <h1 className="text-4xl font-extrabold mb-8 text-center text-blue-700">All Products</h1>
 
       <div className="flex items-center gap-3 mb-8 max-w-lg mx-auto">
