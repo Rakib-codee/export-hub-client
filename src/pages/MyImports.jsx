@@ -19,7 +19,7 @@ const MyImports = () => {
         const res = await fetchMyImports(user.uid);
         if (!active) return;
         setItems(res);
-      } catch (e) {
+      } catch {
         if (active)
           setToast({ type: "error", message: "Failed to load imports" });
       } finally {
@@ -42,7 +42,7 @@ const MyImports = () => {
   };
 
   return (
-    <div className="min-h-screen py-10 px-4 md:px-10 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen py-10 px-4 md:px-10 bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <h1 className="text-4xl font-bold mb-8 text-center text-gray-900 dark:text-white tracking-tight">
         My Imports
       </h1>
