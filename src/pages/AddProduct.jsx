@@ -23,17 +23,35 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+
+    const payload = {
+      ...form,
+      price: Number(form.price),
+      rating: Number(form.rating || 0),
+      availableQuantity: Number(form.availableQuantity || 0),
+      exporterUserId: user?.uid,
+    };
+
     try {
-      setSubmitting(true);
-      const payload = {
-        ...form,
-        price: Number(form.price),
-        rating: Number(form.rating || 0),
-        availableQuantity: Number(form.availableQuantity || 0),
-        exporterUserId: user?.uid,
-      };
-      await createProduct(payload);
+      // 🔹 send to your local server
+      const response = await fetch("http://localhost:3000/models", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add product to server");
+      }
+
+      const data = await response.json();
+      console.log("Server Response:", data);
+
       setToast({ type: "success", message: "Product added successfully!" });
+
       setForm({
         name: "",
         image: "",
@@ -43,10 +61,11 @@ const AddProduct = () => {
         availableQuantity: "",
         description: "",
       });
-    } catch (e2) {
+    } catch (error) {
+      console.error("Error:", error);
       setToast({
         type: "error",
-        message: e2?.response?.data?.message || "Failed to add product",
+        message: error.message || "Failed to add product",
       });
     } finally {
       setSubmitting(false);
@@ -77,7 +96,6 @@ const AddProduct = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-6xl">
-        {/* --- Form Section --- */}
         <form
           onSubmit={handleSubmit}
           className="backdrop-blur-md bg-white/60 shadow-lg border border-gray-100 rounded-2xl p-8 flex flex-col gap-4"
@@ -164,7 +182,6 @@ const AddProduct = () => {
           </button>
         </form>
 
-        {/* --- Live Preview Card --- */}
         <div className="rounded-2xl bg-white/60 backdrop-blur-md shadow-lg p-6 flex flex-col items-center justify-center border border-gray-100">
           {form.image ? (
             <img
@@ -178,22 +195,18 @@ const AddProduct = () => {
             </div>
           )}
           <div className="text-center mt-4 space-y-1">
-            <h2 className="text-xl font-semibold">{form.name || "Product Name"}</h2>
-            <p className="text-gray-600">{form.originCountry || "Origin Country"}</p>
+            <h2 className="text-xl font-semibold">
+              {form.name || "Product Name"}
+            </h2>
+            <p className="text-gray-600">
+              {form.originCountry || "Origin Country"}
+            </p>
             <p className="text-gray-800 font-medium">
               ${form.price || "0.00"} | ⭐ {form.rating || "0.0"}
             </p>
             <p className="text-sm text-gray-500">
               Qty: {form.availableQuantity || 0}
             </p>
-          </div>
-          <div className="mt-4 flex gap-3">
-            <button className="btn btn-sm bg-red-500 text-white hover:bg-red-600">
-              Delete
-            </button>
-            <button className="btn btn-sm bg-blue-600 text-white hover:bg-blue-700">
-              Update
-            </button>
           </div>
         </div>
       </div>
