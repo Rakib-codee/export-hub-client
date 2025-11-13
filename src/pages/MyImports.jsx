@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { deleteImport, fetchMyImports } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { Link } from "react-router-dom";
+import { Star } from "lucide-react";
 
 const MyImports = () => {
   const { user } = useAuth();
@@ -20,8 +21,7 @@ const MyImports = () => {
         if (!active) return;
         setItems(res);
       } catch {
-        if (active)
-          setToast({ type: "error", message: "Failed to load imports" });
+        if (active) setToast({ type: "error", message: "Failed to load imports" });
       } finally {
         if (active) setLoading(false);
       }
@@ -42,22 +42,18 @@ const MyImports = () => {
   };
 
   return (
-    <div className="min-h-screen py-10 px-4 md:px-10 bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen py-10 px-4 md:px-10 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <h1 className="text-4xl font-bold mb-8 text-center text-gray-900 dark:text-white tracking-tight">
         My Imports
       </h1>
 
       {toast && (
         <div
-          className={`alert ${
-            toast.type === "success" ? "alert-success" : "alert-error"
-          } max-w-xl mx-auto mb-6 shadow-md animate-fade-in`}
+          className={`alert ${toast.type === "success" ? "alert-success" : "alert-error"} 
+            max-w-xl mx-auto mb-6 shadow-md animate-fade-in`}
         >
           <span>{toast.message}</span>
-          <button
-            className="btn btn-sm btn-ghost ml-auto"
-            onClick={() => setToast(null)}
-          >
+          <button className="btn btn-sm btn-ghost ml-auto" onClick={() => setToast(null)}>
             ×
           </button>
         </div>
@@ -72,44 +68,60 @@ const MyImports = () => {
           You haven’t imported any products yet.
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((it) => (
             <div
               key={it._id}
-              className="card bg-white dark:bg-gray-800 shadow-md hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
+              className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl 
+              border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg 
+              hover:shadow-2xl transition-all duration-300 overflow-hidden"
             >
-              <figure className="p-4">
-                <img
-                  src={it.productSnapshot?.image}
-                  alt={it.productSnapshot?.name}
-                  className="w-full h-48 object-cover rounded-xl"
-                />
-              </figure>
-              <div className="card-body">
-                <h2 className="card-title text-gray-800 dark:text-white text-lg">
+              <img
+                src={it.productSnapshot?.image || "https://via.placeholder.com/300"}
+                alt={it.productSnapshot?.name}
+                className="w-full h-56 object-cover rounded-t-2xl"
+              />
+
+              <div className="p-5 space-y-3">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {it.productSnapshot?.name}
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Origin: {it.productSnapshot?.originCountry}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Price: <span className="font-semibold">${it.productSnapshot?.price}</span>
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Imported Qty:{" "}
-                  <span className="font-semibold">{it.quantity}</span>
+
+                <div className="flex items-center gap-2 text-yellow-500">
+                  <Star className="w-4 h-4 fill-yellow-500" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {it.productSnapshot?.rating || "N/A"} / 5
+                  </span>
+                </div>
+
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <strong>Origin:</strong> {it.productSnapshot?.originCountry || "Unknown"}
                 </p>
 
-                <div className="card-actions justify-between mt-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <strong>Price:</strong>{" "}
+                  <span className="font-semibold text-green-600 dark:text-green-400">
+                    ${it.productSnapshot?.price}
+                  </span>
+                </p>
+
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <strong>Imported Qty:</strong>{" "}
+                  <span className="font-semibold text-blue-600 dark:text-blue-400">
+                    {it.quantity}
+                  </span>
+                </p>
+
+                <div className="flex justify-between items-center mt-4">
                   <Link
                     to={`/product/${it.productId}`}
-                    className="btn btn-outline btn-primary btn-sm"
+                    className="btn btn-outline btn-primary btn-sm rounded-lg"
                   >
                     See Details
                   </Link>
                   <button
                     onClick={() => removeImport(it._id)}
-                    className="btn btn-error btn-sm text-white"
+                    className="btn btn-error btn-sm text-white rounded-lg"
                   >
                     Remove
                   </button>
