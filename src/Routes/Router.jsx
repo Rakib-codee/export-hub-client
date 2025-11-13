@@ -11,27 +11,30 @@ import PrivateRoute from "./PrivateRoute.jsx";
 import ProductDetails from "../pages/ProductDetails.jsx";
 
 const router = createBrowserRouter([
-	{
-		path: "/",
-		element: <MainLayout />,
-		children: [
-			{ path: "/", element: <Home /> },
-			{ path: "/all-products", element: <AllProducts /> },
-			{ path: "/product/:id", element: <ProductDetails /> },
-			{
-				element: <PrivateRoute />,
-				children: [
-					{ path: "/my-exports", element: <MyExports /> },
-					{ path: "/my-imports", element: <MyImports /> },
-					{ path: "/add-product", element: <AddProduct /> }
-				]
-			},
-			{ path: "/login", element: <Login /> },
-			{ path: "/register", element: <Register /> }
-		]
-	}
+  {
+    path: "/",
+    element: <MainLayout />,
+    children: [
+      { path: "/", element: <Home /> },
+      { path: "/all-products", 
+		element: <AllProducts />,
+	  	 loader: () => fetch("http://localhost:3000/models"),				
+	},
+      { path: "/product/:id", element: <ProductDetails /> },
+      {
+        element: <PrivateRoute />,
+        children: [
+          { path: "/my-exports", element: <MyExports /> },
+          { path: "/my-imports", element: <MyImports /> },
+          { path: "/add-product", element: <AddProduct />, 
+			 loader: () => fetch("http://localhost:3000/models"),
+       },
+        ],
+      },
+      { path: "/login", element: <Login /> },
+      { path: "/register", element: <Register /> },
+    ],
+  },
 ]);
 
 export default router;
-
-
