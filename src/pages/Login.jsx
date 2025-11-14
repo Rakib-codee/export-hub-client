@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
 const Login = () => {
   const { login, googleSignIn } = useAuth();
   const [email, setEmail] = useState("");
@@ -26,7 +28,29 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      await googleSignIn();
+      const result = await googleSignIn();
+      const user = result.user;
+      
+      // Check if user role exists, if not set default to importer
+      try {
+        const roleResponse = await fetch(`${API}/users/${user.uid}`);
+        if (!roleResponse.ok) {
+          // User doesn't have a role, set default
+          await fetch(`${API}/users`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: user.uid,
+              role: "importer", // Default role for Google sign-in
+              email: user.email,
+              name: user.displayName || "User"
+            })
+          });
+        }
+      } catch (roleErr) {
+        console.error("Error checking/saving user role:", roleErr);
+      }
+      
       navigate("/");
     } catch (err) {
       setError("Google Sign-In failed");

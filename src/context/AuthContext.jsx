@@ -14,9 +14,26 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Fetch user role from backend
+  const fetchUserRole = async (userId) => {
+    try {
+      const response = await fetch(`${API}/users/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.role || null;
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+    return null;
+  };
 
   // Register
   const register = async (name, email, password, photoURL) => {
@@ -29,7 +46,10 @@ export const AuthProvider = ({ children }) => {
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
 
   // Logout
-  const logout = () => signOut(auth);
+  const logout = () => {
+    setUserRole(null);
+    signOut(auth);
+  };
 
   // Google Sign-In
   const googleSignIn = () => {
@@ -39,14 +59,23 @@ export const AuthProvider = ({ children }) => {
 
   // Auth state observer
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      
+      if (currentUser) {
+        // Fetch user role when user is logged in
+        const role = await fetchUserRole(currentUser.uid);
+        setUserRole(role);
+      } else {
+        setUserRole(null);
+      }
+      
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const value = { user, loading, register, login, logout, googleSignIn };
+  const value = { user, userRole, loading, register, login, logout, googleSignIn };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

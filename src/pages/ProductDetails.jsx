@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 const ProductDetails = () => {
   const loaderData = useLoaderData();
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(loaderData || null);
@@ -21,6 +21,13 @@ const ProductDetails = () => {
   const available = useMemo(() => Number(product?.availableQuantity ?? 0), [product]);
   const disableSubmit = useMemo(() => !qty || qty < 1 || qty > available || !user, [qty, available, user]);
   const canEditDelete = useMemo(() => user !== null, [user]);
+
+  // Debug: Log user role
+  useEffect(() => {
+    if (user) {
+      console.log("User Role:", userRole, "User ID:", user.uid);
+    }
+  }, [user, userRole]);
 
   useEffect(() => {
     document.title = product?.name ? `Import Export Hub | ${product.name}` : "Import Export Hub | Product Details";
@@ -182,22 +189,34 @@ const ProductDetails = () => {
 
                 {/* Action Buttons */}
                 <div className="space-y-4">
-                  <div className="flex gap-3 flex-wrap">
-                    <button 
-                      className="btn btn-primary btn-lg flex-1 min-w-[140px] shadow-lg hover:shadow-xl transition-all" 
-                      onClick={() => document.getElementById("import_modal").showModal()} 
-                      disabled={!user}
-                    >
-                      📥 Import Now
-                    </button>
-                    <button 
-                      className="btn btn-secondary btn-lg flex-1 min-w-[140px] shadow-lg hover:shadow-xl transition-all" 
-                      onClick={() => document.getElementById("export_modal").showModal()} 
-                      disabled={!user}
-                    >
-                      📤 Export Now
-                    </button>
-                  </div>
+                  {user ? (
+                    <div className="flex flex-col gap-3">
+                      <button 
+                        className="btn btn-primary btn-lg w-full shadow-lg hover:shadow-xl transition-all" 
+                        onClick={() => {
+                          if (userRole && userRole !== "importer") {
+                            setToast({ type: "error", message: "Only importers can import products" });
+                            return;
+                          }
+                          document.getElementById("import_modal").showModal();
+                        }} 
+                      >
+                        📥 Import Now
+                      </button>
+                      <button 
+                        className="btn btn-secondary btn-lg w-full shadow-lg hover:shadow-xl transition-all" 
+                        onClick={() => document.getElementById("export_modal").showModal()} 
+                      >
+                        📤 Export Now
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-full p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                      <p className="text-sm text-blue-700">
+                        Please login to import/export products
+                      </p>
+                    </div>
+                  )}
                   
                   <a 
                     href="/all-products" 

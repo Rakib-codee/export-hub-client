@@ -8,8 +8,11 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [photoURL, setPhotoURL] = useState("");
+  const [role, setRole] = useState("importer"); // Default to importer
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  
+  const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   useEffect(() => {
     document.title = "Import Export Hub | Register";
@@ -34,7 +37,25 @@ const Register = () => {
     }
 
     try {
-      await register(name, email, password, photoURL);
+      const user = await register(name, email, password, photoURL);
+      
+      // Save user role to backend
+      try {
+        await fetch(`${API}/users`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user.uid,
+            role: role,
+            email: email,
+            name: name
+          })
+        });
+      } catch (roleErr) {
+        console.error("Failed to save user role:", roleErr);
+        // Continue even if role save fails
+      }
+      
       navigate("/");
     } catch (err) {
       setError("Registration failed");
@@ -43,7 +64,25 @@ const Register = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      await googleSignIn();
+      const result = await googleSignIn();
+      const user = result.user;
+      
+      // Save user role to backend (default to importer for Google sign-in)
+      try {
+        await fetch(`${API}/users`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user.uid,
+            role: "importer", // Default role for Google sign-in
+            email: user.email,
+            name: user.displayName || "User"
+          })
+        });
+      } catch (roleErr) {
+        console.error("Failed to save user role:", roleErr);
+      }
+      
       navigate("/");
     } catch (err) {
       setError("Google Sign-In failed");
@@ -81,6 +120,35 @@ const Register = () => {
           value={photoURL}
           onChange={(e) => setPhotoURL(e.target.value)}
         />
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Select Your Role</span>
+          </label>
+          <div className="flex gap-4">
+            <label className="label cursor-pointer">
+              <span className="label-text mr-2">📥 Importer</span>
+              <input
+                type="radio"
+                name="role"
+                value="importer"
+                checked={role === "importer"}
+                onChange={(e) => setRole(e.target.value)}
+                className="radio radio-primary"
+              />
+            </label>
+            <label className="label cursor-pointer">
+              <span className="label-text mr-2">📤 Exporter</span>
+              <input
+                type="radio"
+                name="role"
+                value="exporter"
+                checked={role === "exporter"}
+                onChange={(e) => setRole(e.target.value)}
+                className="radio radio-primary"
+              />
+            </label>
+          </div>
+        </div>
         <input
           type="password"
           placeholder="Password"
