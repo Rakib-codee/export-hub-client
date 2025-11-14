@@ -1,13 +1,50 @@
 import HeroSlider from "../components/HeroSlider.jsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Slider from "react-slick";
 import { Star, Earth, Ship, HandFist, TruckElectric } from "lucide-react";
+import { Link } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
 const Home = () => {
+  const [latestProducts, setLatestProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     document.title = "Import Export Hub | Home";
+    
+    // Fetch latest products from backend API
+    const fetchLatestProducts = async () => {
+      try {
+        const response = await fetch(`${API}/models`);
+        if (!response.ok) throw new Error("Failed to fetch products");
+        const products = await response.json();
+        
+        // Get latest 10 products (or all if less than 10)
+        // Sort by _id (newest first) or createdAt if available
+        const sorted = products
+          .sort((a, b) => {
+            // If createdAt exists, use it, otherwise use _id
+            if (a.createdAt && b.createdAt) {
+              return new Date(b.createdAt) - new Date(a.createdAt);
+            }
+            return 0;
+          })
+          .slice(0, 10);
+        
+        setLatestProducts(sorted);
+      } catch (error) {
+        console.error("Error fetching latest products:", error);
+        // Fallback to empty array on error
+        setLatestProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestProducts();
   }, []);
 
   const services = [
@@ -17,18 +54,6 @@ const Home = () => {
     { id: 4, title: "Customs Brokerage", desc: "Expert clearance to ensure smooth border crossing.", img: "https://cdn-icons-png.flaticon.com/512/942/942748.png", rating: 4.6 },
   ];
 
-  const latestProducts = [
-    { id: 1, name: "Organic Mango Pulp", description: "Freshly processed mango pulp.", image: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2", rating: 4.8 },
-    { id: 2, name: "Handmade Jute Bags", description: "Eco-friendly jute bags.", image: "https://images.unsplash.com/photo-1616627563025-6b66c8c9c1cf", rating: 4.6 },
-    { id: 3, name: "Premium Basmati Rice", description: "Long-grain aged basmati rice.", image: "https://images.unsplash.com/photo-1589308078055-5a123f6f9b6c", rating: 4.9 },
-    { id: 4, name: "Ceramic Home Decor", description: "Beautiful handmade ceramic items.", image: "https://images.unsplash.com/photo-1616627457671-1a74a4f19a02", rating: 4.7 },
-    { id: 5, name: "Spices Export Pack", description: "Mixed export pack with turmeric, cumin, and chili powder.", image: "https://images.unsplash.com/photo-1620912189866-b1c743d74d5d", rating: 4.8 },
-    { id: 6, name: "Leather Wallets", description: "High-quality handcrafted leather wallets for men.", image: "https://images.unsplash.com/photo-1621609771445-94b84f2b61d9", rating: 4.5 },
-    { id: 7, name: "Bamboo Furniture", description: "Sustainable and lightweight bamboo furniture.", image: "https://images.unsplash.com/photo-1582582494700-6c84e1baf2b3", rating: 4.7 },
-    { id: 8, name: "Cotton Textiles", description: "Soft cotton fabrics for garments and upholstery.", image: "https://images.unsplash.com/photo-1616627561662-fd02d7eb1ed7", rating: 4.4 },
-    { id: 9, name: "Tea Leaf Export Pack", description: "Premium CTC and Green Tea blend for international buyers.", image: "https://images.unsplash.com/photo-1585238342020-96629b94a9d9", rating: 4.9 },
-    { id: 10, name: "Frozen Shrimp", description: "Frozen, cleaned shrimp ready for export.", image: "https://images.unsplash.com/photo-1615895276186-1f3a81b9e9f1", rating: 4.8 },
-  ];
    const companies = [
     { name: "Maersk", logo: "https://i.ibb.co/5hmG82wD/Maersk-Logo.png" },
     { name: "MSC", logo: "https://i.ibb.co/XZ5wmsF2/MSC-Logo.png" },
@@ -121,25 +146,58 @@ const Home = () => {
       {/* Latest Products Carousel */}
       <section className="px-4 md:px-6 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">Our Latest Products</h2>
-        <Slider {...sliderSettings}>
-          {latestProducts.map((product) => (
-            <div key={product.id} className="p-4">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-lg transition duration-300 overflow-hidden">
-                <img src={product.image} alt={product.name} className="w-full h-52 object-cover" />
-                <div className="p-5">
-                  <h3 className="font-semibold text-lg">{product.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{product.description}</p>
-                  <div className="flex items-center mt-3 gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} fill={i < product.rating ? "gold" : "none"} stroke="currentColor" className="text-yellow-400" />
-                    ))}
-                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">{product.rating.toFixed(1)}</span>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="loading loading-spinner loading-lg"></div>
+          </div>
+        ) : latestProducts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">No products available yet.</p>
+          </div>
+        ) : (
+          <Slider {...sliderSettings}>
+            {latestProducts.map((product) => (
+              <div key={product._id || product.id} className="p-4">
+                <Link to={`/product/${product._id || product.id}`}>
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-lg transition duration-300 overflow-hidden cursor-pointer">
+                    <img 
+                      src={product.image || product.img} 
+                      alt={product.name} 
+                      className="w-full h-52 object-cover" 
+                    />
+                    <div className="p-5">
+                      <h3 className="font-semibold text-lg">{product.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                        {product.description || "No description available"}
+                      </p>
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              size={16} 
+                              fill={i < Math.floor(product.rating || 0) ? "gold" : "none"} 
+                              stroke="currentColor" 
+                              className="text-yellow-400" 
+                            />
+                          ))}
+                          <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                            {(product.rating || 0).toFixed(1)}
+                          </span>
+                        </div>
+                        {product.price && (
+                          <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                            ${product.price}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </Link>
               </div>
-            </div>
-          ))}
-        </Slider>
+            ))}
+          </Slider>
+        )}
       </section>
 
       {/* Features Row */}

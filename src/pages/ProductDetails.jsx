@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLoaderData, useParams } from "react-router-dom";
-import { createImport, createExport, fetchProductById } from "../services/api.js";
+import { useLoaderData, useParams, useNavigate } from "react-router-dom";
+import { createImport, createExport, fetchProductById, deleteProduct } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const ProductDetails = () => {
   const loaderData = useLoaderData();
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(loaderData || null);
   const [loading, setLoading] = useState(!loaderData);
@@ -19,6 +20,7 @@ const ProductDetails = () => {
 
   const available = useMemo(() => Number(product?.availableQuantity ?? 0), [product]);
   const disableSubmit = useMemo(() => !qty || qty < 1 || qty > available || !user, [qty, available, user]);
+  const canEditDelete = useMemo(() => user !== null, [user]);
 
   useEffect(() => {
     document.title = product?.name ? `Import Export Hub | ${product.name}` : "Import Export Hub | Product Details";
@@ -78,39 +80,151 @@ const ProductDetails = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-base-100">
-      <div className="max-w-6xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6 text-center text-primary">Product Details</h1>
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+      return;
+    }
 
+    try {
+      await deleteProduct(id);
+      setToast({ type: "success", message: "Product deleted successfully!" });
+      setTimeout(() => {
+        navigate("/all-products");
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      setToast({ type: "error", message: "Failed to delete product!" });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center py-12 px-4">
+      <div className="max-w-5xl w-full">
         {toast && (
-          <div className={`alert ${toast.type === "success" ? "alert-success" : "alert-error"} shadow-lg mb-4`}>
-            <div className="flex justify-between w-full">
+          <div className={`alert ${toast.type === "success" ? "alert-success" : "alert-error"} shadow-lg mb-6 max-w-2xl mx-auto`}>
+            <div className="flex justify-between w-full items-center">
               <span>{toast.message}</span>
               <button className="btn btn-sm btn-ghost" onClick={() => setToast(null)}>✕</button>
             </div>
           </div>
         )}
 
-        {loading && <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse"><div className="h-80 bg-base-200 rounded-lg"></div><div className="space-y-4"><div className="h-6 bg-base-200 rounded w-3/4"></div><div className="h-4 bg-base-200 rounded w-1/2"></div><div className="h-4 bg-base-200 rounded w-2/3"></div><div className="h-24 bg-base-200 rounded w-full"></div><div className="h-10 bg-base-200 rounded w-1/3"></div></div></div>}
+        {loading && (
+          <div className="bg-white rounded-3xl shadow-2xl p-8 animate-pulse">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="h-96 bg-gray-200 rounded-2xl"></div>
+              <div className="space-y-4">
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                <div className="h-24 bg-gray-200 rounded w-full"></div>
+                <div className="h-12 bg-gray-200 rounded w-full"></div>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {error && <div className="text-center text-red-500 font-medium">{error}</div>}
+        {error && (
+          <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">
+            <div className="text-red-500 font-medium text-lg">{error}</div>
+          </div>
+        )}
 
         {!loading && product && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div><img src={product.img || product.image} alt={product.name} className="w-full h-96 object-cover rounded-2xl shadow-md" /></div>
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+              {/* Image Section */}
+              <div className="relative bg-linear-to-br from-blue-100 to-indigo-100 p-8 flex items-center justify-center min-h-[400px] lg:min-h-[600px]">
+                <img 
+                  src={product.img || product.image} 
+                  alt={product.name} 
+                  className="w-full h-full max-h-[500px] object-contain rounded-2xl shadow-lg" 
+                />
+              </div>
 
-            <div className="flex flex-col justify-center">
-              <h2 className="text-2xl font-bold text-primary mb-2">{product.name}</h2>
-              <p className="text-gray-600 mb-2"><span className="font-semibold">Origin:</span> {product.originCountry || product.country}</p>
-              <p className="text-gray-700 mb-2"><span className="font-semibold">Price:</span> ${product.price}</p>
-              <p className="text-gray-700 mb-2"><span className="font-semibold">Available Quantity:</span> {product.availableQuantity ?? "-"}</p>
-              <p className="text-gray-600 mt-3">{product.description}</p>
+              {/* Content Section */}
+              <div className="p-8 lg:p-12 flex flex-col justify-center bg-white">
+                <div className="mb-6">
+                  <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-indigo-600 mb-4">
+                    {product.name}
+                  </h2>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                      <span className="text-blue-600 font-semibold min-w-[140px]">🌍 Origin:</span>
+                      <span className="text-gray-700">{product.originCountry || product.country}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <span className="text-green-600 font-semibold min-w-[140px]">💰 Price:</span>
+                      <span className="text-gray-800 font-bold text-xl">${product.price}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                      <span className="text-purple-600 font-semibold min-w-[140px]">📦 Available:</span>
+                      <span className="text-gray-700 font-semibold">{product.availableQuantity ?? "-"} units</span>
+                    </div>
+                    
+                    {product.rating && (
+                      <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
+                        <span className="text-yellow-600 font-semibold min-w-[140px]">⭐ Rating:</span>
+                        <span className="text-gray-700 font-semibold">{product.rating}</span>
+                      </div>
+                    )}
+                  </div>
 
-              <div className="mt-6 flex gap-3">
-                <button className="btn btn-primary" onClick={() => document.getElementById("import_modal").showModal()} disabled={!user}>Import Now</button>
-                <button className="btn btn-secondary" onClick={() => document.getElementById("export_modal").showModal()} disabled={!user}>Export Now</button>
-                <a href="/all-products" className="btn btn-outline">Back to Products</a>
+                  {product.description && (
+                    <div className="mb-6 p-4 bg-gray-50 rounded-xl border-l-4 border-indigo-500">
+                      <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-4">
+                  <div className="flex gap-3 flex-wrap">
+                    <button 
+                      className="btn btn-primary btn-lg flex-1 min-w-[140px] shadow-lg hover:shadow-xl transition-all" 
+                      onClick={() => document.getElementById("import_modal").showModal()} 
+                      disabled={!user}
+                    >
+                      📥 Import Now
+                    </button>
+                    <button 
+                      className="btn btn-secondary btn-lg flex-1 min-w-[140px] shadow-lg hover:shadow-xl transition-all" 
+                      onClick={() => document.getElementById("export_modal").showModal()} 
+                      disabled={!user}
+                    >
+                      📤 Export Now
+                    </button>
+                  </div>
+                  
+                  <a 
+                    href="/all-products" 
+                    className="btn btn-outline btn-lg w-full shadow-md hover:shadow-lg transition-all"
+                  >
+                    ← Back to Products
+                  </a>
+                  
+                  {canEditDelete && (
+                    <div className="pt-4 border-t-2 border-gray-200">
+                      <div className="flex gap-3">
+                        <button 
+                          className="btn btn-warning btn-lg flex-1 shadow-lg hover:shadow-xl transition-all" 
+                          onClick={() => navigate(`/update-product/${id}`)}
+                        >
+                          ✏️ Edit Product
+                        </button>
+                        <button 
+                          className="btn btn-error btn-lg flex-1 shadow-lg hover:shadow-xl transition-all" 
+                          onClick={handleDelete}
+                        >
+                          🗑️ Delete Product
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

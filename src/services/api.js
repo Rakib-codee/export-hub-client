@@ -135,17 +135,40 @@ export const fetchMyExports = async () => {
 };
 
 export const deleteProduct = async (id) => {
-  myExports = myExports.filter((x) => x._id !== id);
-  return new Promise((resolve) => setTimeout(() => resolve(true), 200));
+  try {
+    const response = await fetch(`${API}/models/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete product");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    throw error;
+  }
 };
 
-export const updateProduct = async (id, payload) => {
-  const idx = myExports.findIndex((x) => x._id === id);
-  if (idx >= 0) {
-    myExports[idx] = { ...myExports[idx], ...payload };
-    return new Promise((resolve) => setTimeout(() => resolve(myExports[idx]), 300));
-  } else {
-    throw new Error("Product not found");
+export const updateProduct = async (id, productData) => {
+  try {
+    const response = await fetch(`${API}/models/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(productData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update product");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw error;
   }
 };
 
