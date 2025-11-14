@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const API = import.meta.env.VITE_API_BASE_URL || "https://export-hub-server.vercel.app";
 
 const Home = () => {
   const [latestProducts, setLatestProducts] = useState([]);

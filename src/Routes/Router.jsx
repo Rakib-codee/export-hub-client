@@ -10,7 +10,7 @@ import Login from "../pages/Login.jsx";
 import Register from "../pages/Register.jsx";
 import PrivateRoute from "./PrivateRoute.jsx";
 import ProductDetails from "../pages/ProductDetails.jsx";
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const API = import.meta.env.VITE_API_BASE_URL || "https://export-hub-server.vercel.app";
 
 const router = createBrowserRouter([
   {

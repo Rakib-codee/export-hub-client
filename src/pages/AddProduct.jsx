@@ -33,7 +33,8 @@ const AddProduct = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:3000/models", {
+      const API = import.meta.env.VITE_API_BASE_URL || "https://export-hub-server.vercel.app";
+      const response = await fetch(`${API}/models`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
