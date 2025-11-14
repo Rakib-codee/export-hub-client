@@ -1,6 +1,7 @@
 // =======================
 // Dummy data for frontend testing
 // =======================
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 // Products for AllProducts & MyExports/MyImports
 let products = [
@@ -153,7 +154,7 @@ export const updateProduct = async (id, payload) => {
 // =======================
 export const createProduct = async (productData) => {
   try {
-    const response = await fetch("/api/products", {
+    const response = await fetch(`${API}/models`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -177,7 +178,7 @@ export const createProduct = async (productData) => {
 // =======================
 export const createImport = async (importData) => {
   try {
-    const response = await fetch("/api/imports", {
+    const response = await fetch(`${API}/imports`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -197,11 +198,35 @@ export const createImport = async (importData) => {
 };
 
 // =======================
+// Create Export API
+// =======================
+export const createExport = async (exportData) => {
+  try {
+    const response = await fetch(`${API}/exports`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(exportData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create export");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating export:", error);
+    throw error;
+  }
+};
+
+// =======================
 // Product Details API
 // =======================
 export const fetchProductById = async (id) => {
   try {
-    const response = await fetch(`/api/products/${id}`);
+    const response = await fetch(`${API}/models/${id}`);
 
     if (!response.ok) {
       throw new Error("Failed to fetch product details");

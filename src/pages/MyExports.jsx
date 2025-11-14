@@ -1,34 +1,39 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 const MyExports = () => {
-  const { user } = useAuth();
-  const [exports, setExports] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { user } = useAuth();  // Get current logged-in user from AuthContext
+  const [exports, setExports] = useState([]);  // State to store exports data
+  const [loading, setLoading] = useState(true);  // State to manage loading state
+  const [error, setError] = useState("");  // State to manage error
 
   useEffect(() => {
     document.title = "Import Export Hub | My Exports";
 
+    // If no user is logged in, return early
     if (!user) return;
 
     let mounted = true;
 
+    // Fetch exports for the user
     (async () => {
       try {
-        const res = await fetch(`http://localhost:3000/exports?userId=${user.uid}`);
+        const res = await fetch(`${API}/exports?userId=${user.uid}`);
         if (!res.ok) throw new Error("Failed to fetch exports");
         const data = await res.json();
-        if (mounted) setExports(data);
+        if (mounted) setExports(data);  // Update state with fetched data
       } catch (e) {
         console.error(e);
         if (mounted) setError("Failed to load exports");
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setLoading(false);  // Set loading to false once fetching is done
       }
     })();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;  // Cleanup
+    };
   }, [user]);
 
   if (!user) return <p className="text-center mt-16 text-red-500">Please login to view your exports.</p>;

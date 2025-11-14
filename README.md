@@ -14,12 +14,13 @@ Features:
 Local Setup:
 1) Create a `.env` file with:
 ```
-VITE_API_BASE_URL=http://localhost:5000
+VITE_API_BASE_URL=http://localhost:3000
 VITE_FIREBASE_API_KEY=...
 VITE_FIREBASE_AUTH_DOMAIN=...
 VITE_FIREBASE_PROJECT_ID=...
 VITE_FIREBASE_APP_ID=...
 ```
+**Note**: A `.env.example` file is provided for reference.
 2) Install and run:
 ```
 npm install

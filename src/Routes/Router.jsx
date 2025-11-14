@@ -9,6 +9,7 @@ import Login from "../pages/Login.jsx";
 import Register from "../pages/Register.jsx";
 import PrivateRoute from "./PrivateRoute.jsx";
 import ProductDetails from "../pages/ProductDetails.jsx";
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 const router = createBrowserRouter([
   {
@@ -17,16 +18,17 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
 
-      { 
+      {
         path: "/all-products",
         element: <AllProducts />,
-        loader: () => fetch("http://localhost:3000/models").then(res => res.json()),				
+        loader: () => fetch(`${API}/models`).then((res) => res.json()),
       },
 
-      { 
+      {
         path: "/product/:id",
         element: <ProductDetails />,
-        loader: ({ params }) => fetch(`http://localhost:3000/models/${params.id}`).then(res => res.json()),
+        loader: ({ params }) =>
+          fetch(`${API}/models/${params.id}`).then((res) => res.json()),
       },
 
       {
@@ -34,10 +36,10 @@ const router = createBrowserRouter([
         children: [
           { path: "/my-exports", element: <MyExports /> },
           { path: "/my-imports", element: <MyImports /> },
-          { 
+          {
             path: "/add-product",
             element: <AddProduct />,
-            loader: () => fetch("http://localhost:3000/models").then(res => res.json()),
+            loader: () => fetch(`${API}/models`).then((res) => res.json()),
           },
         ],
       },

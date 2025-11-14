@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useParams } from "react-router-dom";
-import { createImport, fetchProductById } from "../services/api.js";
+import { createImport, createExport, fetchProductById } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const ProductDetails = () => {
@@ -13,6 +13,8 @@ const ProductDetails = () => {
   const [error, setError] = useState("");
   const [qty, setQty] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [exportQty, setExportQty] = useState(1);
+  const [exportSubmitting, setExportSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
   const available = useMemo(() => Number(product?.availableQuantity ?? 0), [product]);
@@ -58,6 +60,24 @@ const ProductDetails = () => {
     }
   };
 
+  const handleExport = async (e) => {
+    e.preventDefault();
+    if (!user || !exportQty || exportQty < 1) return;
+
+    try {
+      setExportSubmitting(true);
+      const created = await createExport({ userId: user.uid, productId: product._id, quantity: Number(exportQty) });
+      setProduct((prev) => ({ ...prev, availableQuantity: (prev.availableQuantity || 0) + created.quantity }));
+      setToast({ type: "success", message: "Product exported successfully!" });
+      document.getElementById("export_modal").close();
+    } catch (err) {
+      console.error(err);
+      setToast({ type: "error", message: "Export failed!" });
+    } finally {
+      setExportSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-base-100">
       <div className="max-w-6xl mx-auto p-6">
@@ -89,6 +109,7 @@ const ProductDetails = () => {
 
               <div className="mt-6 flex gap-3">
                 <button className="btn btn-primary" onClick={() => document.getElementById("import_modal").showModal()} disabled={!user}>Import Now</button>
+                <button className="btn btn-secondary" onClick={() => document.getElementById("export_modal").showModal()} disabled={!user}>Export Now</button>
                 <a href="/all-products" className="btn btn-outline">Back to Products</a>
               </div>
             </div>
@@ -106,6 +127,19 @@ const ProductDetails = () => {
           </form>
           <div className="modal-action">
             <button className="btn" onClick={() => document.getElementById("import_modal").close()}>Close</button>
+          </div>
+        </div>
+      </dialog>
+
+      <dialog id="export_modal" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg mb-3">Export Product</h3>
+          <form onSubmit={handleExport} className="space-y-4">
+            <input type="number" min={1} className="input input-bordered w-full" value={exportQty} onChange={(e) => setExportQty(e.target.value)} required />
+            <button className="btn btn-secondary w-full" disabled={!user || exportSubmitting}>{exportSubmitting ? "Exporting..." : "Confirm Export"}</button>
+          </form>
+          <div className="modal-action">
+            <button className="btn" onClick={() => document.getElementById("export_modal").close()}>Close</button>
           </div>
         </div>
       </dialog>
